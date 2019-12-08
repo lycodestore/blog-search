@@ -7,7 +7,11 @@ blog-search是一款基于ElasticSearch打造的中文博客网站搜索引擎�
 
 >ElasticSearch 7.2.0   
 
->ik中文分词器
+下载地址： https://www.elastic.co/guide/en/elastic-stack/7.2/index.html
+
+>ik中文分词器 7.2.0  
+
+下载地址：https://github.com/medcl/elasticsearch-analysis-ik/releases
 
 ### 2、新建索引  
 在kibana中执行如下语句新建索引或通过postman等工具新建相同的索引
