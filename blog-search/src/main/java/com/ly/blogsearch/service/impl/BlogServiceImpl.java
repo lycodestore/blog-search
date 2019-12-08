@@ -98,6 +98,7 @@ public class BlogServiceImpl implements BlogService {
                 }
             }
             articles.add(article);
+            article = new Article();
         }
         QueryResult queryResult = new QueryResult(total, relation, articles);
 

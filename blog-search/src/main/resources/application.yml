@@ -1,3 +1,7 @@
 elasticsearch:
   host: localhost
   port: 9200
+
+spring:
+  thymeleaf:
+    cache: false

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="./index.css" rel="stylesheet" type="text/css" />
+
+    <link rel="stylesheet" href="./layui/css/layui.css">
+    <script type="text/javascript" src="./layui/layui.js "></script>
+    <style>
+        .top {
+            width: 100%;
+            height: 150px;
+        }
+
+        .search-wrapper {
+            margin: 0 auto;
+            margin-bottom: 3px;
+            display: flex;
+            height: 45px;
+            width: 460px;
+            background: white;
+            border-radius: 25px;
+            border: 1px solid #bbb;
+        }
+
+        .search-wrapper:hover {
+            border: 1.5px solid #999;
+        }
+
+        .search-wrapper .left {
+            width: 400px;
+            height: 100%;
+            flex: 0 0 400px;
+        }
+
+        .search-wrapper .left input {
+            width: 95%;
+            height: 100%;
+            font-size: 20px;
+            outline: none;
+            text-indent: 0.5em;
+            border: none;
+            float: right;
+        }
+
+        .search-wrapper .right {
+            flex: 1;
+            height: 100%;
+        }
+
+        .search-wrapper .right img {
+            width: 48px;
+            height: 48px;
+            cursor: pointer;
+        }
+
+        .result-wrapper {
+            margin-top: 20px;
+            max-height: 75%;
+            overflow: scroll;
+        }
+
+        .result-wrapper::-webkit-scrollbar {
+            display: none
+        }
+
+        .search-frame {
+            padding-left: 20px;
+            padding-top: 20px;
+        }
+
+        .result-item {
+            width: 450px;
+            margin-left: 20px;
+            background: rgba(0, 0, 0, 0.44);
+            color: white;
+            padding: 15px;
+            border-radius: 20px;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+
+        .result-item:hover {
+            width: 490px;
+            margin-left: 0;
+            margin: 20px 0 20px 0;
+        }
+
+        .item-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 7px;
+        }
+
+        .item-summary {
+            font-size: 14px;
+            margin-bottom: 7px;
+        }
+
+        .item-bottom {
+            font-size: 13px;
+        }
+
+        .page-wrapper {
+            position: fixed;
+            left: 20px;
+            bottom: 12px;
+            margin-top: 15px;
+            width: 480px;
+            text-align: center;
+        }
+
+        .layui-box a {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        #item-template {
+            display: none;
+        }
+
+        .high-light {
+            color: #1a8ade;
+        }
+
+        .tips-wrapper {
+            position: relative;
+            margin: 0 auto;
+            width: 460px;
+        }
+
+        .tips-bar {
+            position: absolute;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+        }
+
+
+        .tip-item {
+            text-indent: 1em;
+            color: #999;
+            font-size: 16px;
+            line-height: 30px;
+            border-bottom: 1px solid white;
+            cursor: pointer;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .tip-item:hover {
+            background: rgba(255, 255, 255, 0.44);
+        }
+
+        .tip-item:last-child {
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="main">
+        <div class="top"></div>
+        <div class="search-frame">
+            <div class="search-wrapper">
+                <div class="left">
+                    <input type="text" name="" id="search-input">
+                </div>
+                <div class="right">
+                    <img src="./icon.png" id="search-button">
+                </div>
+            </div>
+            <div class="tips-wrapper">
+                <div class="tips-bar">
+                </div>
+            </div>
+        </div>
+        <div class="result-wrapper">
+        </div>
+        <div class="result-item" id="item-template">
+            <div class="item-title">{{title}}</div>
+            <div class="item-summary">
+                {{summary}}
+            </div>
+            <div class="item-bottom">
+                阅读：{{viewCount}}
+            </div>
+        </div>
+    </div>
+    <script>
+        var initialize = false
+        var page = 1
+
+        document.getElementById("search-button").onclick = function () {
+            var tipsBar = document.querySelector('.tips-bar')
+            tipsBar.innerHTML = ''
+            page = 1
+            search()
+        }
+        document.getElementById("search-input").onkeyup = function (event) {
+            if (event.code === 'Space') {
+                console.log(document.getElementById("search-input").value)
+                getSuggest()
+            }
+            if (event.code == 'Enter') {
+                var tipsBar = document.querySelector('.tips-bar')
+                tipsBar.innerHTML = ''
+                page = 1
+                search()
+            }
+        }
+
+
+        function getSuggest() {
+            var xhr = new XMLHttpRequest()
+            var url = '/suggest?text=' + document.getElementById("search-input").value
+            xhr.open('GET', url, true)
+            xhr.send()
+            xhr.onreadystatechange = function (ev) {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    result = JSON.parse(xhr.responseText).result
+                    var tipsBar = document.querySelector('.tips-bar')
+                    tipsBar.innerHTML = ''
+                    result.forEach(function(ele) {
+                        var tipItem = document.createElement('div')
+                        tipItem.className = 'tip-item'
+                        tipItem.innerHTML = ele
+                        tipItem.onclick = function() {
+                            document.getElementById("search-input").value = ele
+                            page = 1
+                            search()
+                            tipsBar.innerHTML = ''
+                        }
+                        tipsBar.appendChild(tipItem)
+                    })
+                }
+            }
+        }
+
+        function search() {
+            var main = document.getElementById('main')
+            var top = document.querySelector('.top')
+            if (!initialize) {
+                main.removeChild(top)
+                var pageWrapper = document.createElement('div')
+                pageWrapper.className = 'page-wrapper'
+                pageWrapper.innerHTML = '<div id="page"></div>'
+                main.appendChild(pageWrapper)
+                var searchWrapper = document.querySelector('.search-wrapper')
+                var searchFrame = document.querySelector('.search-frame')
+                var tipsWrapper = document.querySelector('.tips-wrapper')
+                searchFrame.style.cssText = "padding-left: 20px; padding-top: 20px;"
+                searchWrapper.style.cssText = "margin: 0; margin-bottom: 3px;"
+                tipsWrapper.style.cssText = "margin: 0;"
+                initialize = true
+            }
+
+            var itemTemplate = document.getElementById('item-template').innerHTML
+            var resultWrapper = document.querySelector('.result-wrapper')
+
+            var xhr = new XMLHttpRequest()
+            xhr.open('POST', '/search', true)
+            xhr.setRequestHeader('Content-Type', 'application/json')
+            xhr.send(JSON.stringify({
+                query: document.getElementById("search-input").value,
+                from: (page - 1) * 10
+            }))
+            xhr.onreadystatechange = function (ev) {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var result = JSON.parse(xhr.responseText).result
+                    var total = result.total
+                    layui.use('laypage', function () {
+                        var laypage = layui.laypage;
+                        laypage.render({
+                            elem: 'page'
+                            , count: total
+                            , theme: '#1a8ade'
+                            , curr: page
+                            , jump: function (obj, first) {
+                                if (!first) {
+                                    page = obj.curr
+                                    search()
+                                }
+                            }
+                        })
+                    })
+                    var articles = result.articles
+                    resultWrapper.innerHTML = ''
+                    articles.forEach(function (ele) {
+                        var resultItem = document.createElement('div')
+                        resultItem.className = 'result-item'
+                        resultItem.innerHTML = itemTemplate.replace('{{title}}', ele.title).replace('{{summary}}', ele.summary).replace('{{viewCount}}', ele.viewCount)
+                        resultWrapper.appendChild(resultItem)
+                    })
+
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
