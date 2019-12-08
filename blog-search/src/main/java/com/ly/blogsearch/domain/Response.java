@@ -7,6 +7,9 @@ public class Response {
 
     private Object result;
 
+    public Response() {
+    }
+
     public Response(Integer code, String message, Object result) {
         this.code = code;
         this.message = message;

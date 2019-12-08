@@ -23,4 +23,9 @@ public class BlogTest {
     public void testQuery() throws IOException {
         System.out.println(blogService.getArticles("大数据", 0, 10));
     }
+
+    @Test
+    public void testSuggest() throws IOException {
+        System.out.println(blogService.getSuggestion("数"));
+    }
 }

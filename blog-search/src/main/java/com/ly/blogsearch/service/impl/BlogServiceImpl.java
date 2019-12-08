@@ -16,6 +16,10 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.elasticsearch.search.suggest.*;
+import org.elasticsearch.search.suggest.completion.CompletionSuggestion;
+import org.elasticsearch.search.suggest.completion.CompletionSuggestionBuilder;
+import org.elasticsearch.search.suggest.term.TermSuggestion;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -99,6 +103,30 @@ public class BlogServiceImpl implements BlogService {
 
 
         return queryResult;
+    }
+
+    @Override
+    public List<String> getSuggestion(String text) throws IOException {
+        SearchRequest searchRequest = new SearchRequest(BLOG_INDEX);
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        CompletionSuggestionBuilder completionSuggestion =
+                SuggestBuilders.completionSuggestion("title_completion").text(text);
+        SuggestBuilder suggestBuilder = new SuggestBuilder();
+        suggestBuilder.addSuggestion("completion-suggest", completionSuggestion);
+        searchSourceBuilder.suggest(suggestBuilder);
+        searchRequest.source(searchSourceBuilder);
+
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        List<String> suggestions = new ArrayList<>();
+        CompletionSuggestion suggest = searchResponse.getSuggest().getSuggestion("completion-suggest");
+        for (CompletionSuggestion.Entry entry: suggest.getEntries()) {
+            for (CompletionSuggestion.Entry.Option option: entry) {
+                String suggestText = option.getText().string();
+                suggestions.add(suggestText);
+            }
+        }
+
+        return suggestions;
     }
 
 }

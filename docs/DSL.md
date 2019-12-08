@@ -81,7 +81,7 @@ POST /article/_search
 POST /article/_search
 {
   "suggest": {
-    "my-suggestion": {
+    "completion-suggestion": {
       "text": "数",
       "completion": {
         "field": "title_completion"
